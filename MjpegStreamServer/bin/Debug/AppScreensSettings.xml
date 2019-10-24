@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<AppSettings>
+  <Screes>
+    <Screen>
+      <Id>1</Id>
+      <X>0</X>
+      <Y>0</Y>
+      <Width>960</Width>
+      <Height>640</Height>
+    </Screen>
+    <Screen>
+      <Id>2</Id>
+      <X>960</X>
+      <Y>0</Y>
+      <Width>960</Width>
+      <Height>640</Height>
+    </Screen>
+    <Screen>
+      <Id>3</Id>
+      <X>1000</X>
+      <Y>0</Y>
+      <Width>960</Width>
+      <Height>640</Height>
+    </Screen>
+  </Screes>
+</AppSettings>
