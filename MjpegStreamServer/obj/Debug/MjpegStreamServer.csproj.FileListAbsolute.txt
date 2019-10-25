@@ -4,3 +4,9 @@ D:\work\dvcp_develop\lib\MjpegStreamServer\MjpegStreamServer\bin\Debug\MjpegStre
 D:\work\dvcp_develop\lib\MjpegStreamServer\MjpegStreamServer\obj\Debug\MjpegStreamServer.csproj.CoreCompileInputs.cache
 D:\work\dvcp_develop\lib\MjpegStreamServer\MjpegStreamServer\obj\Debug\MjpegStreamServer.exe
 D:\work\dvcp_develop\lib\MjpegStreamServer\MjpegStreamServer\obj\Debug\MjpegStreamServer.pdb
+D:\work\dvcp_develop\lib\MjpegServer\MjpegStreamServer\bin\Debug\MjpegStreamServer.exe.config
+D:\work\dvcp_develop\lib\MjpegServer\MjpegStreamServer\bin\Debug\MjpegStreamServer.exe
+D:\work\dvcp_develop\lib\MjpegServer\MjpegStreamServer\bin\Debug\MjpegStreamServer.pdb
+D:\work\dvcp_develop\lib\MjpegServer\MjpegStreamServer\obj\Debug\MjpegStreamServer.csproj.CoreCompileInputs.cache
+D:\work\dvcp_develop\lib\MjpegServer\MjpegStreamServer\obj\Debug\MjpegStreamServer.exe
+D:\work\dvcp_develop\lib\MjpegServer\MjpegStreamServer\obj\Debug\MjpegStreamServer.pdb

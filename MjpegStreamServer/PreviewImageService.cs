@@ -77,9 +77,21 @@ namespace MjpegStreamServer
         {
             while (running)
             {
+                //检查是否有连接
+                lock (Program.mjpegServer.SocketList)
+                {
+                    if (Program.mjpegServer.SocketList.Count == 0)
+                    {
+                        Thread.Sleep(1000 / Program.frame);
+
+                        continue;
+                    }
+                }
+
                 int previewGridCount = Program.gridX * Program.gridY;
 
                 int previewTotal = ((screenDataList.Count - 1) / previewGridCount) + 1;
+
                 for (int outputChannel = 0; outputChannel < previewTotal; outputChannel++)
                 {
                     Bitmap outputPreviewBitmap = GetScreenPreviewBitmap(outputChannel);

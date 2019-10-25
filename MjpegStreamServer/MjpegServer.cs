@@ -14,7 +14,9 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -28,14 +30,21 @@ namespace MjpegStreamServer
         private Socket _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);  //侦听socket
         private bool running = true;
 
+        private List<Socket> _socketList;
+        public List<Socket> SocketList
+        {
+            get { return _socketList; }
+        }
+        
         public bool Running
         {
             get { return running; }
         }
 
-        private int port;
         public MjpegServer(int port)
         {
+            _socketList = new List<Socket>();
+
             _socket.Bind(new IPEndPoint(IPAddress.Any, port));
         }
 
@@ -74,6 +83,19 @@ namespace MjpegStreamServer
             return header;
         }
 
+        private static ImageCodecInfo GetImageCodecInfo(ImageFormat imageFormat)
+        {
+            ImageCodecInfo[] imageCodecInfoArr = ImageCodecInfo.GetImageDecoders();
+            foreach (ImageCodecInfo imageCodecInfo in imageCodecInfoArr)
+            {
+                if (imageCodecInfo.FormatID == imageFormat.Guid)
+                {
+                    return imageCodecInfo;
+                }
+            }
+            return null;
+        }
+
         /// <summary>
         /// 接受处理http的请求
         /// </summary>
@@ -85,11 +107,19 @@ namespace MjpegStreamServer
             {
                 Socket socket = ar.AsyncState as Socket;
                 web_client = socket.EndAccept(ar);
-
-                web_client.SendBufferSize = (1024 * 1024);
+                
+                web_client.SendBufferSize = 1024;
                 web_client.SendTimeout = 10000;
 
                 socket.BeginAccept(new AsyncCallback(OnAccept), socket);
+
+                lock (_socketList)
+                {
+                    if (_socketList.IndexOf(web_client) == -1)
+                    {
+                        _socketList.Add(web_client);
+                    }
+                }
 
                 byte[] recv_Buffer = new byte[1024 * 640];
                 int recv_Count = web_client.Receive(recv_Buffer);
@@ -102,47 +132,53 @@ namespace MjpegStreamServer
                 if (routePathParams.Length<3)
                 {
                     web_client.Close(10);
-                    return;
                 }
-
-                //预监路径输出路数索引
-                string previewOutputChannel = routePathParams[2];
-
-                Console.WriteLine("Data Request previewOutputChannel :" + previewOutputChannel);
-
-                //报文头部
-                string head = Header();
-                byte[] headBytes = Encoding.UTF8.GetBytes(head);
-                web_client.Send(headBytes);
-
-                //根据预监输出图像路数索引值去预监图像服务查找图像数据
-                while (web_client.Connected)
+                else
                 {
-                    Bitmap screenPreviewBitmap = PreviewImageService.GetInstance().GetScreenPreviewBitmap(int.Parse(previewOutputChannel));
-                    lock (screenPreviewBitmap)
+                    //预监路径输出路数索引
+                    string previewOutputChannel = routePathParams[2];
+
+                    Console.WriteLine("Data Request previewOutputChannel :" + previewOutputChannel);
+
+                    //报文头部
+                    string head = Header();
+                    byte[] headBytes = Encoding.UTF8.GetBytes(head);
+                    web_client.Send(headBytes);
+
+                    //根据预监输出图像路数索引值去预监图像服务查找图像数据
+                    while (web_client.Connected)
                     {
-                        if (screenPreviewBitmap == null)
+                        Bitmap screenPreviewBitmap = PreviewImageService.GetInstance().GetScreenPreviewBitmap(int.Parse(previewOutputChannel));
+                        lock (screenPreviewBitmap)
                         {
-                            web_client.Close();
-                            return;
+                            if (screenPreviewBitmap == null)
+                            {
+                                web_client.Close();
+                                return;
+                            }
+
+                            EncoderParameters encoderParameters = new EncoderParameters(1);
+                            EncoderParameter encoderParameter = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, 50L);
+                            encoderParameters.Param[0] = encoderParameter;
+
+                            MemoryStream ms = new MemoryStream();
+
+                            screenPreviewBitmap.Save(ms, GetImageCodecInfo(ImageFormat.Jpeg), encoderParameters);
+
+                            byte[] screenBitmapBytes = ms.GetBuffer();
+                            ms.Close();
+                            ms.Dispose();
+
+                            byte[] payloadarray = Encoding.ASCII.GetBytes(PayloadHeader(screenBitmapBytes.Length));
+                            web_client.Send(payloadarray);
+                            //图像数据
+                            web_client.Send(screenBitmapBytes);
+
                         }
 
-                        MemoryStream ms = new MemoryStream();
-                        screenPreviewBitmap.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
-                        byte[] screenBitmapBytes = ms.GetBuffer();
-                        ms.Close();
-                        ms.Dispose();
-
-                        byte[] payloadarray = Encoding.ASCII.GetBytes(PayloadHeader(screenBitmapBytes.Length));
-                        web_client.Send(payloadarray);
-                        //图像数据
-                        web_client.Send(screenBitmapBytes);
-
+                        Thread.Sleep(1000 / Program.frame);
                     }
-
-                    Thread.Sleep(1000 / Program.frame);
                 }
-                
             }
             catch (Exception ex)
             {
@@ -150,7 +186,15 @@ namespace MjpegStreamServer
             }
             finally
             {
+                lock (_socketList)
+                {
+                    if (_socketList.IndexOf(web_client) >= 0)
+                    {
+                        _socketList.Remove(web_client);
+                    }
+                }
                 web_client.Close(10);
+                web_client.Dispose();
             }
         }
 

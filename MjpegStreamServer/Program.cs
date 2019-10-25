@@ -32,6 +32,8 @@ namespace MjpegStreamServer
         public static int previewheight = 1080;
         public static int frame = 10;
         public static List<RestfulScreenData> screenNodeList = new List<RestfulScreenData>();
+        public static MjpegServer mjpegServer;
+
         static void Main(string[] args)
         {
             string configXml = "./AppScreensSettings.xml";
@@ -82,11 +84,12 @@ namespace MjpegStreamServer
                 screenNodeList.Add(screenData);
             }
 
+            //启动预监服务器
+            mjpegServer = new MjpegServer(port);
+            mjpegServer.Start();
+
             //启动预监画面服务
             PreviewImageService.GetInstance().Init(screenNodeList);
-            //启动预监服务器
-            MjpegServer mjpegServer = new MjpegServer(port);
-            mjpegServer.Start();
 
             string cmd = Console.ReadLine();
             while (!cmd.Equals("bye"))
