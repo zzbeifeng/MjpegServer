@@ -108,7 +108,7 @@ namespace MjpegStreamServer
                             Bitmap screenBitmap = ImageHelper.CaptureScreen(new Rectangle(int.Parse(restfulScreenData.x), int.Parse(restfulScreenData.y), int.Parse(restfulScreenData.width), int.Parse(restfulScreenData.height)));
 
                             //设置高质量插值法
-                            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.High;
+                            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Default;
 
                             //设置高质量,低速度呈现平滑程度
                             g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;

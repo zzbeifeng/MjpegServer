@@ -51,7 +51,6 @@ namespace MjpegStreamServer
                 //warnning
             }
 
-
             var xmlDoc = new XmlDocument();
             xmlDoc.Load(configXml);
             XmlElement root = xmlDoc.DocumentElement;
