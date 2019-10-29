@@ -36,7 +36,18 @@ namespace MjpegStreamServer
 
         static void Main(string[] args)
         {
+            ConsoleService.GetInstance().Init();
+            ConsoleService.GetInstance().LogMsg(" Start Mjpeg Server",LogType.Log);
+
             string configXml = "./AppScreensSettings.xml";
+
+            ConsoleService.GetInstance().LogMsg(" Start Mjpeg Server args "+ args[0] + " "+
+                                                args[1]+" "+
+                                                args[2] + " "+
+                                                args[3] + " " +
+                                                args[4] + " " +
+                                                args[5] + " " + 
+                                                args[6], LogType.Log);
 
             if (args.Length >= 7)
             {
@@ -53,44 +64,59 @@ namespace MjpegStreamServer
                 //warnning
             }
 
-            var xmlDoc = new XmlDocument();
-            xmlDoc.Load(configXml);
-            XmlElement root = xmlDoc.DocumentElement;
-            XmlNodeList xmlScreenNodeList = root.SelectNodes("/AppSettings/Screes/Screen");
-            foreach (XmlNode screenNode in xmlScreenNodeList)
+            ConsoleService.GetInstance().LogMsg(" XmlDocument load "+configXml, LogType.Log);
+
+            try
             {
-                XmlNode curXmlNode = screenNode.FirstChild;
-                string id = curXmlNode.InnerText;
-                curXmlNode = curXmlNode.NextSibling;
 
-                string x = curXmlNode.InnerText;
-                curXmlNode = curXmlNode.NextSibling;
+                var xmlDoc = new XmlDocument();
+                xmlDoc.Load(configXml);
+                XmlElement root = xmlDoc.DocumentElement;
+                XmlNodeList xmlScreenNodeList = root.SelectNodes("/AppSettings/Screes/Screen");
+                foreach (XmlNode screenNode in xmlScreenNodeList)
+                {
+                    XmlNode curXmlNode = screenNode.FirstChild;
+                    string id = curXmlNode.InnerText;
+                    curXmlNode = curXmlNode.NextSibling;
 
-                string y = curXmlNode.InnerText;
-                curXmlNode = curXmlNode.NextSibling;
+                    string x = curXmlNode.InnerText;
+                    curXmlNode = curXmlNode.NextSibling;
 
-                string width = curXmlNode.InnerText;
-                curXmlNode = curXmlNode.NextSibling;
+                    string y = curXmlNode.InnerText;
+                    curXmlNode = curXmlNode.NextSibling;
 
-                string height = curXmlNode.InnerText;
+                    string width = curXmlNode.InnerText;
+                    curXmlNode = curXmlNode.NextSibling;
 
-                RestfulScreenData screenData = new RestfulScreenData();
-                screenData.id = id;
-                screenData.x = x;
-                screenData.y = y;
-                screenData.width = width;
-                screenData.height = height;
+                    string height = curXmlNode.InnerText;
 
-                screenNodeList.Add(screenData);
+                    RestfulScreenData screenData = new RestfulScreenData();
+                    screenData.id = id;
+                    screenData.x = x;
+                    screenData.y = y;
+                    screenData.width = width;
+                    screenData.height = height;
+
+                    screenNodeList.Add(screenData);
+                }
+
+                //启动预监服务器
+                mjpegServer = new MjpegServer(port);
+                mjpegServer.Start();
+
+                ConsoleService.GetInstance().LogMsg(" Start PreviewImageService", LogType.Log);
+
+                //启动预监画面服务
+                PreviewImageService.GetInstance().Init(screenNodeList);
             }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
 
-            //启动预监服务器
-            mjpegServer = new MjpegServer(port);
-            mjpegServer.Start();
+                ConsoleService.GetInstance().LogMsg("Start Error " +  e.Message,LogType.Error);
 
-            //启动预监画面服务
-            PreviewImageService.GetInstance().Init(screenNodeList);
-
+            }
+            
             string cmd = Console.ReadLine();
             while (!cmd.Equals("bye"))
             {
