@@ -45,7 +45,7 @@ namespace MjpegStreamServer
         public void SetScreenPadding(int screenIndex,int paddingLeft,int paddingRight)
         {
             //配置
-            if (screenDataList.Count <= screenIndex)
+            if (screenDataList.Count <= screenIndex || screenIndex < 0)
             {
                 return;
             }
@@ -144,25 +144,35 @@ namespace MjpegStreamServer
                                 int.Parse(restfulScreenData.width) + int.Parse(restfulScreenData.paddingLeft) + int.Parse(restfulScreenData.paddingRight), 
                                 int.Parse(restfulScreenData.height));
 
-                            Bitmap screenBitmap = ImageHelper.CaptureScreen(captuRectangle);
-                            
-                            //设置高质量插值法
-                            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Default;
+                            try
+                            {
 
-                            //设置高质量,低速度呈现平滑程度
-                            g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+                                Bitmap screenBitmap = ImageHelper.CaptureScreen(captuRectangle);
 
-                            Rectangle targetRectangle = new System.Drawing.Rectangle(
-                                targetX * Program.previewWidth / Program.gridX,
-                                targetY * Program.previewheight / Program.gridY, Program.previewWidth / Program.gridX,
-                                Program.previewheight / Program.gridY);
+                                //设置高质量插值法
+                                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Default;
 
-                            ImageHelper.MakeThumbnail(targetRectangle,screenBitmap,g);
+                                //设置高质量,低速度呈现平滑程度
+                                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
 
-                            Console.WriteLine("###CaptureScreenTask previewStartId " + previewStartId + " targetRectangle.x " + targetRectangle.X + " targetRectangle.y " + targetRectangle.Y);
+                                Rectangle targetRectangle = new System.Drawing.Rectangle(
+                                    targetX * Program.previewWidth / Program.gridX,
+                                    targetY * Program.previewheight / Program.gridY, Program.previewWidth / Program.gridX,
+                                    Program.previewheight / Program.gridY);
 
-                            //是否分屏幕图片内存
-                            screenBitmap.Dispose();
+                                ImageHelper.MakeThumbnail(targetRectangle, screenBitmap, g);
+
+                                Console.WriteLine("###CaptureScreenTask previewStartId " + previewStartId + " targetRectangle.x " + targetRectangle.X + " targetRectangle.y " + targetRectangle.Y);
+
+                                //是否分屏幕图片内存
+                                screenBitmap.Dispose();
+
+                            }
+                            catch (Exception e)
+                            {
+                                ConsoleService.GetInstance().LogMsg(" CaptureScreenTask "+e.StackTrace, LogType.Error);
+                            }
+                           
                         }
 
                         g.Dispose();

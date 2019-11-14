@@ -178,14 +178,16 @@ namespace MjpegStreamServer
         private void DoSetting(Socket web_client, string[] routePathParams)
         {
             // /setting/padding/0/left/right
-            int previewOutputChannel = int.Parse(routePathParams[3]);
+            int previewOutputChannel = int.Parse(routePathParams[3]) - 1;
             int paddingLeft = int.Parse(routePathParams[4]);
             int paddingRight = int.Parse(routePathParams[5]);
+
+            ConsoleService.GetInstance().LogMsg("DoSetting previewOutputChannel " + previewOutputChannel +
+                                                " paddingLeft " + paddingLeft +
+                                                " paddingRight " + paddingRight, LogType.Log);
+
             PreviewImageService.GetInstance().SetScreenPadding(previewOutputChannel, paddingLeft,paddingRight);
 
-            ConsoleService.GetInstance().LogMsg("DoSetting previewOutputChannel "+ previewOutputChannel +
-                                                " paddingLeft " + paddingLeft +
-                                                " paddingRight "+ paddingRight, LogType.Log);
 
             //报文头部
             string head = Header();
