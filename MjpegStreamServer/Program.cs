@@ -20,6 +20,11 @@ namespace MjpegStreamServer
         public string width { get; set; }
         [DefaultValue("0")]
         public string height { get; set; }
+        [DefaultValue("0")]
+        public string paddingLeft { get; set; }
+        [DefaultValue("0")]
+        public string paddingRight { get; set; }
+
     }
 
     class Program
@@ -41,14 +46,6 @@ namespace MjpegStreamServer
 
             string configXml = "./AppScreensSettings.xml";
 
-            ConsoleService.GetInstance().LogMsg(" Start Mjpeg Server args "+ args[0] + " "+
-                                                args[1]+" "+
-                                                args[2] + " "+
-                                                args[3] + " " +
-                                                args[4] + " " +
-                                                args[5] + " " + 
-                                                args[6], LogType.Log);
-
             if (args.Length >= 7)
             {
                 port = int.Parse(args[0]);
@@ -58,10 +55,20 @@ namespace MjpegStreamServer
                 previewheight = int.Parse(args[4]);
                 frame = int.Parse(args[5]);
                 configXml = args[6];
+
+                ConsoleService.GetInstance().LogMsg(" Start Mjpeg Server args " + args[0] + " " +
+                                                    args[1] + " " +
+                                                    args[2] + " " +
+                                                    args[3] + " " +
+                                                    args[4] + " " +
+                                                    args[5] + " " +
+                                                    args[6], LogType.Log);
+
             }
             else
             {
                 //warnning
+                ConsoleService.GetInstance().LogMsg(" Start Mjpeg Server without args ", LogType.Log);
             }
 
             ConsoleService.GetInstance().LogMsg(" XmlDocument load "+configXml, LogType.Log);
@@ -96,7 +103,8 @@ namespace MjpegStreamServer
                     screenData.y = y;
                     screenData.width = width;
                     screenData.height = height;
-
+                    screenData.paddingRight = "0";
+                    screenData.paddingLeft = "0";
                     screenNodeList.Add(screenData);
                 }
 

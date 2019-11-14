@@ -36,6 +36,28 @@ namespace MjpegStreamServer
             return instance;
         }
 
+        /// <summary>
+        /// 设置预监屏幕单个输出左右偏移尺寸 是否要左右跨屏画面
+        /// </summary>
+        /// <param name="screenIndex"></param>
+        /// <param name="paddingLeft"></param>
+        /// <param name="paddingRight"></param>
+        public void SetScreenPadding(int screenIndex,int paddingLeft,int paddingRight)
+        {
+            //配置
+            if (screenDataList.Count <= screenIndex)
+            {
+                return;
+            }
+
+            lock (screenDataList)
+            {
+                screenDataList[screenIndex].paddingRight = paddingRight.ToString();
+                screenDataList[screenIndex].paddingLeft = paddingLeft.ToString();
+            }
+            
+        }
+
         public void Init(List<RestfulScreenData> screenNodeList)
         {
             screenDataList = screenNodeList;
@@ -85,7 +107,11 @@ namespace MjpegStreamServer
 
                 int previewGridCount = Program.gridX * Program.gridY;
 
-                int previewTotal = ((screenDataList.Count - 1) / previewGridCount) + 1;
+                int previewTotal = 0;
+                lock (screenDataList)
+                {
+                    previewTotal = ((screenDataList.Count - 1) / previewGridCount) + 1;
+                }
 
                 for (int outputChannel = 0; outputChannel < previewTotal; outputChannel++)
                 {
@@ -112,8 +138,14 @@ namespace MjpegStreamServer
                             int targetX = previewStartId % Program.gridX;
                             int targetY = previewStartId / Program.gridX;
 
-                            Bitmap screenBitmap = ImageHelper.CaptureScreen(new Rectangle(int.Parse(restfulScreenData.x), int.Parse(restfulScreenData.y), int.Parse(restfulScreenData.width), int.Parse(restfulScreenData.height)));
+                            //左右偏移
+                            Rectangle captuRectangle = new Rectangle(int.Parse(restfulScreenData.x) - int.Parse(restfulScreenData.paddingLeft), 
+                                int.Parse(restfulScreenData.y),
+                                int.Parse(restfulScreenData.width) + int.Parse(restfulScreenData.paddingLeft) + int.Parse(restfulScreenData.paddingRight), 
+                                int.Parse(restfulScreenData.height));
 
+                            Bitmap screenBitmap = ImageHelper.CaptureScreen(captuRectangle);
+                            
                             //设置高质量插值法
                             g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Default;
 
@@ -125,14 +157,12 @@ namespace MjpegStreamServer
                                 targetY * Program.previewheight / Program.gridY, Program.previewWidth / Program.gridX,
                                 Program.previewheight / Program.gridY);
 
-                            //在指定位置并且按指定大小绘制原图片的指定部分
-                            g.DrawImage(screenBitmap, targetRectangle, new System.Drawing.Rectangle(0, 0, screenBitmap.Width, screenBitmap.Height), System.Drawing.GraphicsUnit.Pixel);
+                            ImageHelper.MakeThumbnail(targetRectangle,screenBitmap,g);
 
                             Console.WriteLine("###CaptureScreenTask previewStartId " + previewStartId + " targetRectangle.x " + targetRectangle.X + " targetRectangle.y " + targetRectangle.Y);
 
                             //是否分屏幕图片内存
                             screenBitmap.Dispose();
-
                         }
 
                         g.Dispose();

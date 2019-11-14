@@ -35,6 +35,49 @@ namespace MjpegStreamServer
             return tSrcBmp;
         }
 
+
+        /// <summary>
+        /// 保持等比绘制大图到指定的容器
+        /// </summary>
+        /// <param name="targetRectangle"></param>
+        /// <param name="screenBitmap"></param>
+        /// <param name="g"></param>
+        public static void MakeThumbnail(Rectangle targetRectangle, Bitmap screenBitmap, System.Drawing.Graphics g)
+        {
+            //在指定位置并且按指定大小绘制原图片的指定部分
+            float bitmapWidth = screenBitmap.Width;
+            float bitmapHeight = screenBitmap.Height;
+            
+            float rectWidth = targetRectangle.Width;
+            float rectHeight = targetRectangle.Height;
+
+            float bitmapRate = bitmapWidth / bitmapHeight;
+
+            float rectRate = rectWidth / rectHeight;
+            float targetHeight = 0.0f;
+            float targetWidth = 0.0f;
+            if (bitmapRate > rectRate)
+            {
+                targetHeight = rectWidth / bitmapRate;
+
+                targetRectangle.Y += (int)((rectHeight - targetHeight) * 0.5f);
+
+                targetRectangle.Height = (int) targetHeight;
+            }
+            else
+            {
+                targetWidth = rectHeight * bitmapRate;
+
+                targetRectangle.X += (int)((rectWidth - targetWidth) * 0.5f);
+
+                targetRectangle.Width = (int)targetWidth;
+            }
+
+            g.DrawImage(screenBitmap, targetRectangle, new System.Drawing.Rectangle(0, 0, screenBitmap.Width, screenBitmap.Height), System.Drawing.GraphicsUnit.Pixel);
+
+        }
+
+
         #region 缩略图
         /// <summary>
         /// 生成缩略图
