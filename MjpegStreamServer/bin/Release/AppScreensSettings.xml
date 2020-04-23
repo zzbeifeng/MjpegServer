@@ -5,28 +5,7 @@
       <Id>1</Id>
       <X>0</X>
       <Y>0</Y>
-      <Width>480</Width>
-      <Height>1080</Height>
-    </Screen>
-    <Screen>
-      <Id>2</Id>
-      <X>480</X>
-      <Y>0</Y>
-      <Width>480</Width>
-      <Height>1080</Height>
-    </Screen>
-    <Screen>
-      <Id>3</Id>
-      <X>960</X>
-      <Y>0</Y>
-      <Width>480</Width>
-      <Height>1080</Height>
-    </Screen>
-    <Screen>
-      <Id>4</Id>
-      <X>1440</X>
-      <Y>0</Y>
-      <Width>480</Width>
+      <Width>1920</Width>
       <Height>1080</Height>
     </Screen>
   </Screes>

@@ -31,11 +31,11 @@ namespace MjpegStreamServer
     {
         public static string ServerIp = "";
         public static int port = 9191;
-        public static int gridX = 2;
-        public static int gridY = 2;
+        public static int gridX = 1;
+        public static int gridY = 1;
         public static int previewWidth = 1920;
         public static int previewheight = 1080;
-        public static int frame = 10;
+        public static int frame = 15;
         public static List<RestfulScreenData> screenNodeList = new List<RestfulScreenData>();
         public static MjpegServer mjpegServer;
 

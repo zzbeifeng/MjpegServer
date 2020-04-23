@@ -47,6 +47,7 @@ namespace MjpegStreamServer
         {
             _socket.Listen(100);
             _socket.BeginAccept(new AsyncCallback(OnAccept), _socket);
+            
             running = true;
         }
 
@@ -129,11 +130,11 @@ namespace MjpegStreamServer
 
                 Console.WriteLine("Data Request routePath :" + routePath);
 
-                //解析地址首字段 /preview/0/normal  , /setting/padding/0/left/right
+                //解析地址首字段 /preview/0/normal  , /setting/padding/0/left/right , /heart/
 
                 string[] routePathParams = routePath.Split('/');
                 //参数问题
-                if (routePathParams.Length<4)
+                if (routePathParams.Length<2)
                 {
                     web_client.Close(10);
                 }
@@ -151,7 +152,11 @@ namespace MjpegStreamServer
                         //设置
                         DoSetting(web_client, routePathParams);
                     }
-
+                    else if (requestCmd.Equals("heart"))
+                    {
+                        //设置
+                        DoHeart(web_client, routePathParams);
+                    }
                 }
             }
             catch (Exception ex)
@@ -175,8 +180,27 @@ namespace MjpegStreamServer
             }
         }
 
+        private void DoHeart(Socket web_client, string[] routePathParams)
+        { 
+            //报文头部
+            string head = Header();
+            byte[] headBytes = Encoding.UTF8.GetBytes(head);
+            web_client.Send(headBytes);
+
+            byte[] result = Encoding.ASCII.GetBytes("SUCCESS");
+            web_client.Send(result);
+            web_client.Close(10);
+            web_client.Dispose();
+        }
+
         private void DoSetting(Socket web_client, string[] routePathParams)
         {
+
+            if (routePathParams.Length < 4)
+            {
+                return;
+            }
+            
             // /setting/padding/0/left/right
             int previewOutputChannel = int.Parse(routePathParams[3]) - 1;
             int paddingLeft = int.Parse(routePathParams[4]);
@@ -202,6 +226,11 @@ namespace MjpegStreamServer
 
         private void DoPreview(Socket web_client, string[] routePathParams)
         {
+            if (routePathParams.Length < 4)
+            {
+                return;
+            }
+
             try
             {
                 //预监路径输出路数索引
